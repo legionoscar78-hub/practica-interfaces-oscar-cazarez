@@ -1,0 +1,122 @@
+/* ==========================================================================
+   overlays.css — ZONA 3 · Interacción y acciones críticas
+   · Drawer (panel deslizante) para configurar parámetros
+   · Modal de confirmación para acciones destructivas
+   Ambos usan <dialog> nativo: foco atrapado, Escape y ::backdrop incluidos.
+   Animaciones de apertura/cierre entre 250 ms y 350 ms.
+   ========================================================================== */
+
+dialog.overlay {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  max-width: none;
+  max-height: none;
+  overflow: visible;
+}
+dialog.overlay::backdrop {
+  background: var(--scrim);
+  backdrop-filter: blur(2px);
+  animation: fade-in var(--t-base) var(--ease);
+}
+dialog.overlay.is-closing::backdrop { animation: fade-out var(--t-base) var(--ease) forwards; }
+
+@keyframes fade-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
+
+.panel { display: flex; flex-direction: column; background: var(--surface); }
+
+/* ---------- Drawer ------------------------------------------------------ */
+dialog.drawer {
+  position: fixed;
+  inset: 0 0 0 auto;
+  margin: 0;
+  width: min(460px, 100vw);
+  height: 100vh;
+  height: 100dvh;
+  animation: drawer-in var(--t-slow) var(--ease);
+}
+dialog.drawer.is-closing { animation: drawer-out var(--t-base) var(--ease) forwards; }
+@keyframes drawer-in  { from { transform: translateX(100%); } to { transform: none; } }
+@keyframes drawer-out { from { transform: none; } to { transform: translateX(100%); } }
+
+dialog.drawer .panel {
+  height: 100%;
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-2);
+}
+.panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-4) var(--sp-3);
+  border-bottom: 1px solid var(--border);
+}
+.panel__head h2 { font-size: var(--fs-xl); overflow-wrap: anywhere; }
+.panel__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: var(--sp-4);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.panel__foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+.fieldset { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: var(--sp-2) var(--sp-4); margin: 0; min-width: 0; }
+.fieldset legend { padding: 0 var(--sp-2); font-size: var(--fs-xs); font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
+.form-grid { display: grid; gap: var(--sp-4); }
+
+/* ---------- Modal de confirmación -------------------------------------- */
+dialog.modal {
+  margin: auto;
+  width: min(480px, calc(100vw - 2rem));
+  animation: modal-in var(--t-base) var(--ease);
+}
+dialog.modal.is-closing { animation: modal-out var(--t-base) var(--ease) forwards; }
+@keyframes modal-in  { from { opacity: 0; transform: translateY(16px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes modal-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(8px) scale(0.97); } }
+
+dialog.modal .panel {
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2);
+}
+.modal__icon {
+  display: grid;
+  place-items: center;
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+.modal__icon .icon { width: 26px; height: 26px; }
+.modal__icon[data-tone="danger"] { background: var(--danger-soft); color: var(--danger); }
+.modal__icon[data-tone="primary"] { background: var(--primary-soft); color: var(--primary); }
+.modal__text { color: var(--text-muted); }
+.modal__text strong { color: var(--text); overflow-wrap: anywhere; }
+.modal__confirm { margin-top: var(--sp-2); }
+.modal__confirm[hidden] { display: none; }
+dialog.modal .panel__foot {
+  padding: var(--sp-3) 0 0;
+  border: 0;
+  flex-direction: column-reverse;
+}
+dialog.modal .panel__foot .btn { width: 100%; }
+
+@media (min-width: 640px) {
+  dialog.modal .panel__foot { flex-direction: row; }
+  dialog.modal .panel__foot .btn { width: auto; }
+}
