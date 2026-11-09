@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="NimbusOps: panel de monitoreo de servidores e instancias cloud (Dashboard SPA responsivo).">
+  <title>NimbusOps · Panel de monitoreo</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%233454d1'/%3E%3Cpath d='M10 22a4 4 0 010-8 6 6 0 0111.6 1.4A3.3 3.3 0 0121 22H10z' fill='none' stroke='white' stroke-width='2.2' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+  <!-- Aplica el tema guardado antes de pintar (evita parpadeo) -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('nimbus-theme');
+        if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) { /* almacenamiento no disponible: se usa prefers-color-scheme */ }
+    })();
+  </script>
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/overlays.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Saltar al contenido principal</a>
+
+  <!-- Sprite de iconos (2D: iconografía consistente, trazo de 2 px) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18a4 4 0 010-8 5.5 5.5 0 0110.7 1.3A3.4 3.4 0 0117 18H7z"/></symbol>
+      <symbol id="i-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></symbol>
+      <symbol id="i-server" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="7" rx="2"/><rect x="3" y="14" width="18" height="7" rx="2"/><path d="M7 6.5h.01M7 17.5h.01"/></symbol>
+      <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+      <symbol id="i-restart" viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-3-6.7"/><path d="M21 3v6h-6"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></symbol>
+      <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h8M18 6h2M4 12h2M12 12h8M4 18h10M20 18h0"/><circle cx="15" cy="6" r="2.5"/><circle cx="9" cy="12" r="2.5"/><circle cx="17" cy="18" r="2.5"/></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2L12 3z"/><path d="M12 10v5M12 18h.01"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+      <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></symbol>
+      <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+      <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+      <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+      <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+      <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+      <symbol id="i-panel-left" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></symbol>
+      <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></symbol>
+      <symbol id="i-dollar" viewBox="0 0 24 24"><path d="M12 2v20M17 6.5C16 5 14.3 4.5 12 4.5c-3 0-5 1.2-5 3.3 0 5 10 2.4 10 7.6 0 2-2 3.3-5 3.3-2.5 0-4.3-.7-5.5-2.2"/></symbol>
+      <symbol id="i-activity" viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></symbol>
+      <symbol id="i-sort" viewBox="0 0 24 24"><path d="M7 4v16M3 16l4 4 4-4M17 20V4M13 8l4-4 4 4"/></symbol>
+      <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8V4z"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="app" id="app">
+
+    <!-- =====================================================================
+         ZONA 1 · NAVEGACIÓN — Header superior fijo
+         ===================================================================== -->
+    <header class="topbar">
+      <button class="btn btn--ghost btn--icon" id="menu-btn" type="button"
+              aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menú de navegación">
+        <svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg>
+      </button>
+
+      <a class="brand" href="#/resumen" aria-label="NimbusOps, ir al resumen">
+        <span class="brand__mark"><svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg></span>
+        <span class="brand__name">NimbusOps</span>
+      </a>
+
+      <span class="topbar__spacer"></span>
+
+      <span class="live-pill" id="live-pill" data-live="on" role="status">
+        <span class="live-dot" aria-hidden="true"></span><span id="live-text">En vivo</span>
+      </span>
+
+      <button class="btn btn--ghost btn--icon" id="theme-btn" type="button" aria-pressed="false"
+              aria-label="Activar modo oscuro" title="Cambiar tema">
+        <svg class="icon" id="theme-icon" aria-hidden="true"><use href="#i-moon"/></svg>
+      </button>
+
+      <button class="avatar" type="button" aria-label="Cuenta de Valeria Ortiz, ingeniera DevOps">VO</button>
+    </header>
+
+    <!-- Sidebar persistente (escritorio) / retráctil (móvil) -->
+    <aside class="sidebar" id="sidebar" aria-label="Navegación principal">
+      <nav aria-label="Secciones">
+        <p class="eyebrow sidebar__group" id="grp-monitoreo">Monitoreo</p>
+        <ul class="nav-list" aria-labelledby="grp-monitoreo">
+          <li>
+            <a class="nav-link" href="#/resumen" data-route="resumen" aria-label="Resumen" title="Resumen">
+              <svg class="icon" aria-hidden="true"><use href="#i-dashboard"/></svg>
+              <span class="nav-link__text">Resumen</span>
+            </a>
+          </li>
+          <li>
+            <a class="nav-link" href="#/servidores" data-route="servidores" aria-label="Servidores" title="Servidores">
+              <svg class="icon" aria-hidden="true"><use href="#i-server"/></svg>
+              <span class="nav-link__text">Servidores</span>
+              <span class="nav-link__badge" id="nav-alert-count" aria-label="alertas activas" hidden>0</span>
+            </a>
+          </li>
+        </ul>
+
+        <p class="eyebrow sidebar__group" id="grp-sistema">Sistema</p>
+        <ul class="nav-list" aria-labelledby="grp-sistema">
+          <li>
+            <a class="nav-link" href="#/guia" data-route="guia" aria-label="Guía de estados" title="Guía de estados">
+              <svg class="icon" aria-hidden="true"><use href="#i-layers"/></svg>
+              <span class="nav-link__text">Guía de estados</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar__foot">
+        <button class="nav-link" id="collapse-btn" type="button" aria-expanded="true" aria-label="Contraer menú" title="Contraer menú">
+          <svg class="icon" aria-hidden="true"><use href="#i-panel-left"/></svg>
+          <span class="nav-link__text">Contraer menú</span>
+        </button>
+      </div>
+    </aside>
+    <div class="scrim" id="scrim" aria-hidden="true"></div>
+
+    <!-- =====================================================================
+         ZONA 2 · CONTENIDO DINÁMICO — vistas de la SPA
+         ===================================================================== -->
+    <main class="main" id="main" tabindex="-1">
+
+      <div class="pagebar">
+        <nav aria-label="Migas de pan"><ol class="breadcrumbs" id="breadcrumbs"></ol></nav>
+        <a class="back-link" id="back-link" href="#/resumen" hidden>
+          <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg>
+          <span id="back-text">Volver</span>
+        </a>
+      </div>
+
+      <!-- ============ Vista: Resumen (Bento Grid) ============ -->
+      <section class="view" id="view-resumen" data-view="resumen" aria-labelledby="h-resumen">
+        <header class="page-head">
+          <div>
+            <h1 id="h-resumen" tabindex="-1">Resumen de infraestructura</h1>
+            <p>Estado general de tus instancias cloud. Las métricas se actualizan cada pocos segundos.</p>
+          </div>
+          <div class="page-head__actions">
+            <button class="btn btn--secondary" id="live-toggle" type="button" aria-pressed="true">
+              <svg class="icon" aria-hidden="true"><use href="#i-pause"/></svg>
+              <span class="btn__label">Pausar actualización</span>
+            </button>
+          </div>
+        </header>
+
+        <div class="bento">
+          <!-- KPIs 1x1 -->
+          <article class="card stat" aria-labelledby="k1">
+            <div class="stat__top"><span class="stat__icon stat__icon--ok"><svg class="icon" aria-hidden="true"><use href="#i-server"/></svg></span><h2 class="card__title" id="k1">Instancias activas</h2></div>
+            <p class="stat__value" id="kpi-active">–</p>
+            <p class="stat__note" id="kpi-active-note">&nbsp;</p>
+          </article>
+          <article class="card stat" aria-labelledby="k2">
+            <div class="stat__top"><span class="stat__icon"><svg class="icon" aria-hidden="true"><use href="#i-cpu"/></svg></span><h2 class="card__title" id="k2">CPU promedio</h2></div>
+            <p class="stat__value" id="kpi-cpu">–</p>
+            <p class="stat__note">Últimos 2 minutos</p>
+          </article>
+          <article class="card stat" aria-labelledby="k3">
+            <div class="stat__top"><span class="stat__icon stat__icon--bad"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg></span><h2 class="card__title" id="k3">Alertas activas</h2></div>
+            <p class="stat__value" id="kpi-alerts">–</p>
+            <p class="stat__note">Requieren revisión</p>
+          </article>
+          <article class="card stat" aria-labelledby="k4">
+            <div class="stat__top"><span class="stat__icon stat__icon--warn"><svg class="icon" aria-hidden="true"><use href="#i-dollar"/></svg></span><h2 class="card__title" id="k4">Costo estimado / mes</h2></div>
+            <p class="stat__value" id="kpi-cost">–</p>
+            <p class="stat__note">Según las instancias activas</p>
+          </article>
+
+          <!-- Gráfica principal (hero 3x2) -->
+          <article class="card bento__hero" aria-labelledby="c-cpu">
+            <div class="card__head">
+              <h2 id="c-cpu">Uso de CPU y memoria · tiempo real</h2>
+              <ul class="legend" aria-label="Leyenda">
+                <li><span class="legend__sw" style="--c:var(--chart-1)"></span>CPU</li>
+                <li><span class="legend__sw" style="--c:var(--chart-2)"></span>Memoria</li>
+              </ul>
+            </div>
+            <div class="card__body"><div class="chart" id="chart-main" role="img" aria-label="Gráfica de líneas de uso de CPU y memoria"></div></div>
+            <dl class="chart-foot">
+              <div><dt>CPU actual</dt><dd id="cf-cpu">–</dd></div>
+              <div><dt>CPU máx.</dt><dd id="cf-cpumax">–</dd></div>
+              <div><dt>Memoria actual</dt><dd id="cf-mem">–</dd></div>
+              <div><dt>Memoria máx.</dt><dd id="cf-memmax">–</dd></div>
+            </dl>
+          </article>
+
+          <!-- Donut (1x1) -->
+          <article class="card" aria-labelledby="c-estado">
+            <h2 id="c-estado">Instancias por estado</h2>
+            <div class="card__body donut-wrap">
+              <svg class="donut" id="donut" viewBox="0 0 120 120" role="img" aria-label="Distribución de instancias por estado"></svg>
+              <ul class="legend" id="donut-legend" style="flex-direction:column"></ul>
+            </div>
+          </article>
+
+          <!-- Volúmenes (1x1) -->
+          <article class="card" aria-labelledby="c-disk">
+            <h2 id="c-disk">Uso de disco</h2>
+            <div class="card__body vol-list" id="vol-list"></div>
+          </article>
+
+          <!-- Alertas (2x1) -->
+          <article class="card bento__wide" aria-labelledby="c-alerts">
+            <h2 id="c-alerts">Alertas recientes</h2>
+            <ul class="alert-list" id="alert-list"></ul>
+          </article>
+
+          <!-- Región (2x1) -->
+          <article class="card bento__wide" aria-labelledby="c-region">
+            <h2 id="c-region">Carga por región</h2>
+            <div class="card__body vol-list" id="region-list"></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ============ Vista: Servidores (tabla) ============ -->
+      <section class="view" id="view-servidores" data-view="servidores" aria-labelledby="h-servidores" hidden>
+        <header class="page-head">
+          <div>
+            <h1 id="h-servidores" tabindex="-1">Servidores</h1>
+            <p>Consulta, configura y administra tus instancias. Las acciones críticas piden confirmación.</p>
+          </div>
+        </header>
+
+        <div class="panel-card">
+          <div class="toolbar">
+            <div class="toolbar__filters">
+              <div class="search">
+                <label class="sr-only" for="server-search">Buscar instancia</label>
+                <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+                <input class="input" id="server-search" type="search" placeholder="Buscar por nombre o IP  ( / )" autocomplete="off">
+              </div>
+              <div class="control select">
+                <label class="sr-only" for="server-status">Filtrar por estado</label>
+                <select class="input" id="server-status">
+                  <option value="all">Todos los estados</option>
+                  <option value="running">Activo</option>
+                  <option value="warning">Con alerta</option>
+                  <option value="stopped">Detenido</option>
+                  <option value="restarting">Reiniciando</option>
+                </select>
+                <svg class="icon select__icon" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+              </div>
+            </div>
+
+            <!-- Dropdown personalizado: ordenar -->
+            <div class="dropdown" id="sort-dropdown">
+              <button class="btn btn--secondary" id="sort-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="sort-menu">
+                <svg class="icon" aria-hidden="true"><use href="#i-sort"/></svg>
+                <span class="btn__label" id="sort-label">Ordenar: Nombre</span>
+                <svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+              </button>
+              <div class="menu" id="sort-menu" role="menu" aria-label="Ordenar instancias" hidden>
+                <button class="menu__item" role="menuitemradio" aria-checked="true"  data-sort="name"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>Nombre</button>
+                <button class="menu__item" role="menuitemradio" aria-checked="false" data-sort="cpu"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>Mayor uso de CPU</button>
+                <button class="menu__item" role="menuitemradio" aria-checked="false" data-sort="mem"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>Mayor uso de memoria</button>
+                <button class="menu__item" role="menuitemradio" aria-checked="false" data-sort="status"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>Estado</button>
+              </div>
+            </div>
+          </div>
+
+          <table class="table" id="server-table">
+            <caption class="sr-only">Lista de instancias</caption>
+            <thead>
+              <tr>
+                <th scope="col">Instancia</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Región</th>
+                <th scope="col">CPU</th>
+                <th scope="col">Memoria</th>
+                <th scope="col"><span class="sr-only">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody id="server-body"></tbody>
+          </table>
+
+          <div class="empty" id="server-empty" hidden>
+            <svg class="icon" style="width:40px;height:40px" aria-hidden="true"><use href="#i-search"/></svg>
+            <strong>No encontramos instancias</strong>
+            <p>Prueba con otro nombre o quita los filtros.</p>
+            <button class="btn btn--secondary" id="clear-filters" type="button"><span class="btn__label">Quitar filtros</span></button>
+          </div>
+
+          <div class="pager">
+            <p id="server-count" aria-live="polite">–</p>
+            <nav class="pager__nav" id="pager" aria-label="Paginación"></nav>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ Vista: Guía de estados ============ -->
+      <section class="view" id="view-guia" data-view="guia" aria-labelledby="h-guia" hidden>
+        <header class="page-head">
+          <div>
+            <h1 id="h-guia" tabindex="-1">Guía de estados y reglas de interacción</h1>
+            <p>Cada control tiene cinco estados definidos: Default, Hover, Focus, Disabled y Loading. Aquí se muestran todos a la vez.</p>
+          </div>
+        </header>
+
+        <section class="panel-card" aria-labelledby="g-btn">
+          <div style="padding:var(--sp-4) var(--sp-4) 0"><h2 id="g-btn">Botones</h2></div>
+          <div class="matrix-wrap"><div class="matrix" id="matrix-buttons"></div></div>
+        </section>
+
+        <section class="panel-card" aria-labelledby="g-fields">
+          <div style="padding:var(--sp-4) var(--sp-4) 0"><h2 id="g-fields">Campos y controles de entrada</h2></div>
+          <div class="matrix-wrap"><div class="matrix" id="matrix-fields"></div></div>
+        </section>
+
+        <div class="bento" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))">
+          <section class="card" aria-labelledby="g-keys">
+            <h2 id="g-keys">5D · Atajos de teclado</h2>
+            <ul class="shortcuts">
+              <li><kbd>Esc</kbd> Cierra el modal, el panel, el menú o el sidebar abierto.</li>
+              <li><kbd>/</kbd> Enfoca el buscador de servidores.</li>
+              <li><kbd>↑</kbd> <kbd>↓</kbd> Se mueve entre las opciones de un menú.</li>
+              <li><kbd>Tab</kbd> Recorre los controles; el foco queda atrapado dentro de modal y panel.</li>
+            </ul>
+          </section>
+          <section class="card" aria-labelledby="g-ixd">
+            <h2 id="g-ixd">Las 5 dimensiones de IxD</h2>
+            <ul class="ixd-list">
+              <li><b>1D</b><span><strong>Palabras:</strong> etiquetas y mensajes breves, en verbo de acción.</span></li>
+              <li><b>2D</b><span><strong>Visual:</strong> iconos de trazo único, jerarquía tipográfica y paleta funcional.</span></li>
+              <li><b>3D</b><span><strong>Objetos:</strong> zonas táctiles de al menos 44 × 44 px.</span></li>
+              <li><b>4D</b><span><strong>Tiempo:</strong> transiciones de 200 a 350 ms y spinners en cargas.</span></li>
+              <li><b>5D</b><span><strong>Comportamiento:</strong> reglas coherentes ante clics y teclado.</span></li>
+            </ul>
+          </section>
+        </div>
+      </section>
+
+      <p class="footnote">NimbusOps · Práctica de Diseño de Interfaces Web · Datos simulados con fines educativos.</p>
+    </main>
+  </div>
+
+  <!-- =======================================================================
+       ZONA 3 · INTERACCIÓN Y ACCIONES CRÍTICAS
+       ======================================================================= -->
+
+  <!-- Drawer: configuración de parámetros -->
+  <dialog class="overlay drawer" id="drawer" aria-labelledby="drawer-title">
+    <form class="panel" id="config-form" novalidate style="height:100%">
+      <header class="panel__head">
+        <div>
+          <p class="eyebrow">Configurar instancia</p>
+          <h2 id="drawer-title">–</h2>
+        </div>
+        <button class="btn btn--ghost btn--icon" type="button" data-close aria-label="Cerrar panel">
+          <svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>
+        </button>
+      </header>
+
+      <div class="panel__body">
+        <div class="field" id="f-name">
+          <label class="field__label" for="cfg-name">Nombre de la instancia <span class="req" aria-hidden="true">*</span></label>
+          <div class="control" id="cfg-name-control">
+            <input class="input" id="cfg-name" name="name" type="text" autocomplete="off" spellcheck="false"
+                   required aria-describedby="cfg-name-hint cfg-name-error">
+          </div>
+          <p class="field__hint" id="cfg-name-hint">Usa minúsculas, números y guiones (3 a 32 caracteres).</p>
+          <p class="field__error" id="cfg-name-error" role="alert"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg><span></span></p>
+        </div>
+
+        <div class="field" id="f-desc">
+          <div class="field__row">
+            <label class="field__label" for="cfg-desc">Descripción</label>
+            <span class="counter" id="cfg-desc-count" aria-hidden="true">0 / 200</span>
+          </div>
+          <textarea class="textarea" id="cfg-desc" name="desc" maxlength="200" placeholder="Ej. Servicio de autenticación del entorno de producción"></textarea>
+        </div>
+
+        <div class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">
+          <div class="field">
+            <label class="field__label" for="cfg-type">Tipo de instancia</label>
+            <div class="control select">
+              <select class="input" id="cfg-type" name="type"></select>
+              <svg class="icon select__icon" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field__label" for="cfg-region">Región</label>
+            <div class="control select">
+              <select class="input" id="cfg-region" name="region" disabled aria-describedby="cfg-region-hint"></select>
+              <svg class="icon select__icon" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+            </div>
+            <p class="field__hint" id="cfg-region-hint">No se puede cambiar después de crearla.</p>
+          </div>
+        </div>
+
+        <div class="field" id="f-date">
+          <label class="field__label" for="cfg-date">Próximo mantenimiento</label>
+          <div class="control"><input class="input" id="cfg-date" name="date" type="date" aria-describedby="cfg-date-error"></div>
+          <p class="field__error" id="cfg-date-error" role="alert"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg><span></span></p>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="cfg-restart">Política de reinicio</label>
+          <div class="control select">
+            <select class="input" id="cfg-restart" name="restart">
+              <option value="never">Nunca reiniciar automáticamente</option>
+              <option value="on-failure">Reiniciar solo si falla</option>
+              <option value="always">Reiniciar siempre tras un fallo</option>
+            </select>
+            <svg class="icon select__icon" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+          </div>
+        </div>
+
+        <fieldset class="fieldset">
+          <legend>Automatización</legend>
+          <label class="switch" id="sw-autoscale-wrap">
+            <input type="checkbox" role="switch" id="cfg-autoscale" name="autoscale">
+            <span class="switch__track" aria-hidden="true"></span>
+            <span class="switch__text">Autoescalado<small>Añade capacidad cuando la CPU supera el 80 %.</small></span>
+          </label>
+          <label class="switch">
+            <input type="checkbox" role="switch" id="cfg-mail" name="mail">
+            <span class="switch__track" aria-hidden="true"></span>
+            <span class="switch__text">Alertas por correo<small>Recibe un aviso cuando haya incidentes.</small></span>
+          </label>
+        </fieldset>
+      </div>
+
+      <footer class="panel__foot">
+        <button class="btn btn--secondary" type="button" data-close><span class="btn__label">Cancelar</span></button>
+        <button class="btn btn--primary" id="cfg-save" type="submit" disabled>
+          <span class="btn__spinner" aria-hidden="true"></span><span class="btn__label">Guardar cambios</span>
+        </button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Modal: confirmación de acciones destructivas -->
+  <dialog class="overlay modal" id="confirm-modal" role="alertdialog" aria-labelledby="modal-title" aria-describedby="modal-desc">
+    <div class="panel">
+      <div class="modal__icon" id="modal-icon" data-tone="warning"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg></div>
+      <h2 id="modal-title">–</h2>
+      <p class="modal__text" id="modal-desc">–</p>
+
+      <div class="field modal__confirm" id="modal-confirm-field" hidden>
+        <label class="field__label" for="modal-confirm-input">Escribe <strong class="mono" id="modal-confirm-name"></strong> para confirmar</label>
+        <input class="input" id="modal-confirm-input" type="text" autocomplete="off" spellcheck="false">
+      </div>
+
+      <footer class="panel__foot">
+        <button class="btn btn--secondary" type="button" id="modal-cancel" data-close><span class="btn__label">Cancelar</span></button>
+        <button class="btn btn--danger" type="button" id="modal-confirm-btn">
+          <span class="btn__spinner" aria-hidden="true"></span><span class="btn__label">Confirmar</span>
+        </button>
+      </footer>
+    </div>
+  </dialog>
+
+  <!-- Notificaciones -->
+  <div class="toasts" id="toasts" role="region" aria-label="Notificaciones" aria-live="polite"></div>
+
+  <!-- Scripts clásicos (sin módulos ES) para que funcione abriendo index.html directamente -->
+  <script src="js/data.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/servers.js"></script>
+  <script src="js/overlays.js"></script>
+  <script src="js/guide.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
