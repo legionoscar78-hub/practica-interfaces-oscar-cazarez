@@ -1,0 +1,75 @@
+{
+  "errores_de_consola": [],
+  "pruebas": [
+    {
+      "label": "desktop resumen",
+      "overflowX": false,
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "small": []
+    },
+    {
+      "label": "desktop servidores",
+      "overflowX": false,
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "small": []
+    },
+    {
+      "label": "desktop guia",
+      "overflowX": false,
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "small": []
+    },
+    {
+      "label": "tablet resumen",
+      "overflowX": false,
+      "scrollWidth": 820,
+      "innerWidth": 820,
+      "small": []
+    },
+    {
+      "label": "movil resumen",
+      "overflowX": false,
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "small": []
+    },
+    {
+      "label": "movil menu abierto",
+      "overflowX": false,
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "small": []
+    },
+    {
+      "label": "movil servidores",
+      "overflowX": false,
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "small": []
+    },
+    {
+      "label": "movil360 guia",
+      "overflowX": false,
+      "scrollWidth": 360,
+      "innerWidth": 360,
+      "small": []
+    },
+    {
+      "label": "movil360 servidores",
+      "overflowX": false,
+      "scrollWidth": 360,
+      "innerWidth": 360,
+      "small": []
+    },
+    {
+      "label": "movil360 resumen",
+      "overflowX": false,
+      "scrollWidth": 360,
+      "innerWidth": 360,
+      "small": []
+    }
+  ]
+}
